@@ -30,6 +30,7 @@ public function rules(): array
         'departamento_id'   => 'sometimes|integer|exists:departamentos,id',
         'municipio_id'      => 'sometimes|integer|exists:municipios,id',
         'correo'            => "sometimes|email|unique:paciente,correo,{$pacienteId}",
+        'foto_url'          => 'nullable|string',
     ];
 }
 

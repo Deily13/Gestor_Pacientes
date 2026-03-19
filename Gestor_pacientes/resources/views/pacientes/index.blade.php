@@ -3,262 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Pacientes</title>
+    <title>Gestor de Pacientes</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: #f5f3ef; color: #1a1714; }
 
-        :root {
-            --bg:       #f5f3ef;
-            --surface:  #ffffff;
-            --border:   #e2ddd6;
-            --text:     #1a1714;
-            --muted:    #8c867e;
-            --accent:   #c9541a;
-            --accent-h: #a8430f;
-            --danger:   #b91c1c;
-            --success:  #166534;
-            --radius:   10px;
-            --shadow:   0 2px 12px rgba(0,0,0,.07);
-        }
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; left: 0; background: #1a1714; overflow-x: hidden; transition: .3s; padding-top: 60px; }
+        .sidebar a { padding: 12px 20px; font-size: .95rem; color: #c4bfb8; display: block; text-decoration: none; transition: color .2s; }
+        .sidebar a:hover { color: #c9541a; }
+        .sidebar .closebtn { position: absolute; top: 12px; right: 18px; font-size: 1.8rem; color: #c4bfb8; }
+        .openbtn { position: fixed; top: 14px; left: 16px; z-index: 1500; background: #1a1714; color: #fff; border: none; padding: .45rem 1rem; border-radius: 8px; font-size: .9rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background .2s; }
+        .openbtn:hover { background: #c9541a; }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            padding: 2.5rem 1.5rem;
-        }
+        .main-content { padding: 80px 2rem 2rem; max-width: 1100px; margin: 0 auto; }
+        .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem; }
+        .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; line-height: 1; }
+        .page-header p  { color: #8c867e; font-size: .875rem; margin-top: .25rem; }
 
-        /* ── HEADER ── */
-        .page-header {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-        }
-        .page-header h1 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 2rem;
-            line-height: 1;
-        }
-        .page-header p { color: var(--muted); font-size: .875rem; margin-top: .3rem; }
-        .container { max-width: 1100px; margin: 0 auto; }
-
-        /* ── TABLA ── */
-        .table-wrap {
-            background: var(--surface);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .table-toolbar {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: .75rem;
-            align-items: center;
-        }
-        .search-input {
-            flex: 1;
-            max-width: 300px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius);
-            padding: .5rem .9rem;
-            font-size: .875rem;
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            outline: none;
-            transition: border-color .2s;
-        }
-        .search-input:focus { border-color: var(--accent); }
+        .table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
+        .table-toolbar { padding: .9rem 1.25rem; border-bottom: 1px solid #e2ddd6; display: flex; gap: .75rem; align-items: center; }
+        .search-input { flex: 1; max-width: 300px; border: 1.5px solid #e2ddd6; border-radius: 8px; padding: .45rem .85rem; font-size: .875rem; font-family: 'DM Sans', sans-serif; background: #f5f3ef; outline: none; transition: border-color .2s; }
+        .search-input:focus { border-color: #c9541a; }
 
         table { width: 100%; border-collapse: collapse; }
-        thead { background: var(--bg); }
-        th {
-            text-align: left;
-            padding: .75rem 1.25rem;
-            font-size: .72rem;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            white-space: nowrap;
-        }
-        td {
-            padding: .85rem 1.25rem;
-            font-size: .875rem;
-            border-top: 1px solid var(--border);
-            vertical-align: middle;
-        }
+        thead { background: #f5f3ef; }
+        th { text-align: left; padding: .7rem 1.25rem; font-size: .72rem; font-weight: 600; color: #8c867e; text-transform: uppercase; letter-spacing: .07em; white-space: nowrap; }
+        td { padding: .8rem 1.25rem; font-size: .875rem; border-top: 1px solid #e2ddd6; vertical-align: middle; }
         tr:hover td { background: #faf9f7; }
-
-        .badge {
-            display: inline-block;
-            padding: .2rem .6rem;
-            border-radius: 99px;
-            font-size: .72rem;
-            font-weight: 600;
-            background: #f0ece6;
-            color: var(--muted);
-        }
+        .badge-tipo { display: inline-block; padding: .18rem .6rem; border-radius: 99px; font-size: .72rem; font-weight: 600; background: #f0ece6; color: #8c867e; }
         .actions { display: flex; gap: .4rem; }
-        .state-row td {
-            text-align: center;
-            padding: 3rem;
-            color: var(--muted);
-        }
+        .state-row td { text-align: center; padding: 3rem; color: #8c867e; }
+        .foto-tabla { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #e2ddd6; }
+        .foto-placeholder { width: 38px; height: 38px; border-radius: 50%; background: #f0ece6; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #8c867e; border: 2px solid #e2ddd6; }
 
-        /* ── PAGINACIÓN ── */
-        .pagination {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: .5rem;
-            padding: 1rem 1.25rem;
-            border-top: 1px solid var(--border);
-            font-size: .85rem;
-        }
-        .page-btn {
-            border: 1.5px solid var(--border);
-            background: none;
-            border-radius: var(--radius);
-            padding: .35rem .75rem;
-            cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            font-size: .82rem;
-            color: var(--text);
-            transition: all .2s;
-        }
+        .pagination-bar { display: flex; justify-content: flex-end; align-items: center; gap: .5rem; padding: .9rem 1.25rem; border-top: 1px solid #e2ddd6; font-size: .85rem; }
+        .page-btn { border: 1.5px solid #e2ddd6; background: none; border-radius: 8px; padding: .3rem .75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .8rem; color: #1a1714; transition: all .2s; }
         .page-btn:disabled { opacity: .35; cursor: not-allowed; }
-        .page-btn:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
-        .page-info { color: var(--muted); }
+        .page-btn:not(:disabled):hover { border-color: #c9541a; color: #c9541a; }
+        .page-info { color: #8c867e; }
 
-        /* ── BOTONES ── */
-        .btn {
-            padding: .55rem 1.2rem;
-            border-radius: var(--radius);
-            font-size: .875rem;
-            font-weight: 500;
-            font-family: 'DM Sans', sans-serif;
-            cursor: pointer;
-            border: none;
-            transition: all .2s;
-        }
-        .btn-primary   { background: var(--accent); color: #fff; }
-        .btn-primary:hover { background: var(--accent-h); }
-        .btn-secondary { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
-        .btn-secondary:hover { border-color: var(--text); }
-        .btn-danger    { background: var(--danger); color: #fff; }
-        .btn-danger:hover { background: #991b1b; }
-        .btn-sm { padding: .3rem .75rem; font-size: .78rem; }
+        .modal-content { border: none; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+        .modal-header  { border-bottom: 1px solid #e2ddd6; padding: 1.25rem 1.5rem .9rem; }
+        .modal-title   { font-family: 'DM Serif Display', serif; font-size: 1.3rem; }
+        .modal-body    { padding: 1.25rem 1.5rem; }
+        .modal-footer  { border-top: 1px solid #e2ddd6; padding: .9rem 1.5rem; }
 
-        /* ── MODAL ── */
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-backdrop.open { display: flex; }
-        .modal {
-            background: var(--surface);
-            border-radius: var(--radius);
-            width: min(560px, 95vw);
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,.2);
-            animation: slideUp .25s ease;
-        }
-        @keyframes slideUp {
-            from { opacity:0; transform:translateY(16px); }
-            to   { opacity:1; transform:translateY(0); }
-        }
-        .modal-header {
-            padding: 1.4rem 1.75rem 1rem;
-            border-bottom: 1px solid var(--border);
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+        .form-group label { font-size: .75rem; font-weight: 600; color: #8c867e; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .25rem; }
+        .form-control { border: 1.5px solid #e2ddd6 !important; border-radius: 8px !important; background: #f5f3ef !important; font-family: 'DM Sans', sans-serif !important; font-size: .9rem !important; transition: border-color .2s !important; }
+        .form-control:focus { border-color: #c9541a !important; box-shadow: none !important; }
+        .form-control:disabled { opacity: .55; }
+
+        /* ── FOTO UPLOAD ── */
+        .foto-upload-wrap {
+            grid-column: 1 / -1;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        .modal-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; }
-        .modal-close {
-            background: none; border: none;
-            font-size: 1.3rem; cursor: pointer;
-            color: var(--muted); transition: color .2s;
-        }
-        .modal-close:hover { color: var(--text); }
-        .modal-body { padding: 1.4rem 1.75rem; }
-
-        /* ── FORM ── */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
-        .form-group { display: flex; flex-direction: column; gap: .3rem; }
-        .form-group.full { grid-column: 1 / -1; }
-        label { font-size: .75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-        input, select {
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius);
-            padding: .6rem .85rem;
-            font-size: .9rem;
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            outline: none;
+            gap: 1.25rem;
+            padding: 1rem;
+            border: 1.5px dashed #e2ddd6;
+            border-radius: 10px;
+            background: #faf9f7;
             transition: border-color .2s;
         }
-        input:focus, select:focus { border-color: var(--accent); }
-        input:disabled { opacity: .55; cursor: not-allowed; }
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: .75rem;
-            margin-top: 1.4rem;
+        .foto-upload-wrap:hover { border-color: #c9541a; }
+        .foto-preview {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            border: 2px solid #e2ddd6;
+            flex-shrink: 0;
+            background: #f0ece6;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #c4bfb8;
+            overflow: hidden;
         }
+        .foto-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .foto-upload-info { flex: 1; }
+        .foto-upload-info strong { font-size: .875rem; }
+        .foto-upload-info p { font-size: .8rem; color: #8c867e; margin: .2rem 0 .6rem; }
 
-        /* ── CONFIRM MODAL ── */
-        .confirm-body { padding: 2rem 1.75rem; text-align: center; }
-        .confirm-body .icon { font-size: 2.2rem; margin-bottom: .75rem; }
-        .confirm-body h3 { font-family: 'DM Serif Display', serif; font-size: 1.25rem; margin-bottom: .4rem; }
-        .confirm-body p { color: var(--muted); font-size: .88rem; }
-        .confirm-actions { display: flex; gap: .75rem; justify-content: center; margin-top: 1.4rem; }
-
-        /* ── TOAST ── */
-        #toast {
-            position: fixed;
-            bottom: 1.5rem; right: 1.5rem;
-            padding: .7rem 1.2rem;
-            border-radius: var(--radius);
-            font-size: .875rem;
-            font-weight: 500;
-            color: #fff;
-            opacity: 0;
-            transform: translateY(8px);
-            transition: all .3s;
-            z-index: 9999;
-            pointer-events: none;
+        .foto-tabs { display: flex; gap: .5rem; margin-bottom: .75rem; }
+        .foto-tab {
+            padding: .3rem .9rem;
+            border-radius: 99px;
+            border: 1.5px solid #e2ddd6;
+            background: none;
+            font-size: .8rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all .2s;
+            color: #8c867e;
         }
+        .foto-tab.active { background: #1a1714; color: #fff; border-color: #1a1714; }
+
+        .foto-panel { display: none; }
+        .foto-panel.active { display: block; }
+
+        .btn-upload {
+            background: #1a1714; color: #fff; border: none;
+            border-radius: 8px; padding: .4rem .9rem;
+            font-size: .82rem; font-family: 'DM Sans', sans-serif;
+            cursor: pointer; transition: background .2s;
+        }
+        .btn-upload:hover { background: #c9541a; }
+        .btn-upload:disabled { opacity: .5; cursor: not-allowed; }
+        #foto-file-input { display: none; }
+
+        .upload-status { font-size: .78rem; color: #8c867e; margin-top: .4rem; }
+        .upload-status.ok    { color: #166534; }
+        .upload-status.error { color: #b91c1c; }
+
+        .btn-accent { background: #c9541a; color: #fff; border: none; border-radius: 8px; padding: .5rem 1.2rem; font-size: .875rem; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: background .2s; }
+        .btn-accent:hover { background: #a8430f; color: #fff; }
+
+        .confirm-body { padding: 1.5rem; text-align: center; }
+        .confirm-body .icon { font-size: 2rem; margin-bottom: .6rem; }
+        .confirm-body h5 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; margin-bottom: .4rem; }
+        .confirm-body p { color: #8c867e; font-size: .875rem; }
+
+        #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: .7rem 1.2rem; border-radius: 8px; font-size: .875rem; font-weight: 500; color: #fff; opacity: 0; transform: translateY(8px); transition: all .3s; z-index: 9999; pointer-events: none; }
         #toast.show { opacity: 1; transform: translateY(0); }
-        #toast.success { background: var(--success); }
-        #toast.error   { background: var(--danger); }
+        #toast.success { background: #166534; }
+        #toast.error   { background: #b91c1c; }
     </style>
 </head>
 <body>
-<div class="container">
 
-    <!-- HEADER -->
+<div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+    <a href="#" onclick="cargarPacientes(1); closeNav()">👤 Pacientes</a>
+    <a href="javascript:void(0)" onclick="cerrarSesion()">🚪 Cerrar sesión</a>
+</div>
+<button class="openbtn" onclick="openNav()">☰ Menú</button>
+
+<div class="main-content">
     <div class="page-header">
         <div>
             <h1>Pacientes</h1>
             <p id="total-label">Cargando...</p>
         </div>
-        <button class="btn btn-primary" id="btn-nuevo">+ Nuevo paciente</button>
+        <button type="button" class="btn btn-accent" data-toggle="modal" data-target="#modalForm" id="btn-nuevo">
+            + Nuevo paciente
+        </button>
     </div>
 
-    <!-- TABLA -->
     <div class="table-wrap">
         <div class="table-toolbar">
             <input class="search-input" type="search" id="search" placeholder="Buscar por documento o nombre…">
@@ -266,6 +158,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Foto</th>
                     <th>Documento</th>
                     <th>Nombre completo</th>
                     <th>Género</th>
@@ -275,341 +168,461 @@
                 </tr>
             </thead>
             <tbody id="tbody">
-                <tr class="state-row"><td colspan="6">Cargando pacientes…</td></tr>
+                <tr class="state-row"><td colspan="7">Cargando pacientes…</td></tr>
             </tbody>
         </table>
-        <div class="pagination">
+        <div class="pagination-bar">
             <button class="page-btn" id="btn-prev" disabled>← Anterior</button>
             <span class="page-info" id="page-info"></span>
             <button class="page-btn" id="btn-next" disabled>Siguiente →</button>
         </div>
     </div>
-
 </div>
 
 <!-- MODAL FORMULARIO -->
-<div class="modal-backdrop" id="modal-form">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 id="modal-title">Nuevo paciente</h2>
-            <button class="modal-close" data-close="modal-form">✕</button>
-        </div>
-        <div class="modal-body">
-            <form id="form-paciente" novalidate>
-                <input type="hidden" id="f-modo">
-                <input type="hidden" id="f-doc-original">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Tipo documento *</label>
-                        <select id="f-tipo-doc" required>
-                            <option value="">— Seleccionar —</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Número documento *</label>
-                        <input type="text" id="f-numero-doc" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Primer nombre *</label>
-                        <input type="text" id="f-nombre1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Segundo nombre</label>
-                        <input type="text" id="f-nombre2">
-                    </div>
-                    <div class="form-group">
-                        <label>Primer apellido *</label>
-                        <input type="text" id="f-apellido1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Segundo apellido</label>
-                        <input type="text" id="f-apellido2">
-                    </div>
-                    <div class="form-group">
-                        <label>Género *</label>
-                        <select id="f-genero" required>
-                            <option value="">— Seleccionar —</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Departamento *</label>
-                        <select id="f-departamento" required>
-                            <option value="">— Seleccionar —</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Municipio *</label>
-                        <select id="f-municipio" required>
-                            <option value="">— Seleccionar departamento —</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Correo electrónico</label>
-                        <input type="email" id="f-correo">
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" data-close="modal-form">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="btn-guardar">Guardar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<div class="modal fade" id="modalForm" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Nuevo paciente</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>×</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-paciente" novalidate>
+                    <input type="hidden" id="f-modo">
+                    <input type="hidden" id="f-doc-original">
+                    <input type="hidden" id="f-foto-url">
 
-<!-- MODAL CONFIRMAR ELIMINAR -->
-<div class="modal-backdrop" id="modal-confirm">
-    <div class="modal" style="width:min(400px,95vw)">
-        <div class="confirm-body">
-            <div class="icon">🗑️</div>
-            <h3>¿Eliminar paciente?</h3>
-            <p>Esta acción no se puede deshacer.</p>
-            <div class="confirm-actions">
-                <button class="btn btn-secondary" data-close="modal-confirm">Cancelar</button>
-                <button class="btn btn-danger" id="btn-confirm-delete">Sí, eliminar</button>
+                    <div class="form-grid">
+
+                        <!-- FOTO -->
+                        <div class="foto-upload-wrap">
+                            <div class="foto-preview" id="foto-preview">👤</div>
+                            <div class="foto-upload-info">
+                                <strong>Foto del paciente</strong>
+                                <p>Sube una imagen o pega una URL</p>
+
+                                <div class="foto-tabs">
+                                    <button type="button" class="foto-tab active" onclick="cambiarTab('archivo')">📁 Archivo</button>
+                                    <button type="button" class="foto-tab" onclick="cambiarTab('url')">🔗 URL</button>
+                                </div>
+
+                                <!-- Panel archivo -->
+                                <div class="foto-panel active" id="panel-archivo">
+                                    <button type="button" class="btn-upload" id="btn-subir-foto"
+                                        onclick="document.getElementById('foto-file-input').click()">
+                                        Seleccionar imagen
+                                    </button>
+                                    <input type="file" id="foto-file-input" accept="image/jpeg,image/png,image/jpg,image/webp">
+                                    <div class="upload-status" id="upload-status"></div>
+                                </div>
+
+                                <!-- Panel URL -->
+                                <div class="foto-panel" id="panel-url">
+                                    <input type="url" class="form-control" id="f-foto-url-input"
+                                           placeholder="https://ejemplo.com/foto.jpg"
+                                           style="margin-bottom:.4rem">
+                                    <button type="button" class="btn-upload" onclick="usarUrl()">Usar URL</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo documento *</label>
+                            <select class="form-control" id="f-tipo-doc" required>
+                                <option value="">— Seleccionar —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Número documento *</label>
+                            <input type="text" class="form-control" id="f-numero-doc" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Primer nombre *</label>
+                            <input type="text" class="form-control" id="f-nombre1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Segundo nombre</label>
+                            <input type="text" class="form-control" id="f-nombre2">
+                        </div>
+                        <div class="form-group">
+                            <label>Primer apellido *</label>
+                            <input type="text" class="form-control" id="f-apellido1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Segundo apellido</label>
+                            <input type="text" class="form-control" id="f-apellido2">
+                        </div>
+                        <div class="form-group">
+                            <label>Género *</label>
+                            <select class="form-control" id="f-genero" required>
+                                <option value="">— Seleccionar —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento *</label>
+                            <select class="form-control" id="f-departamento" required>
+                                <option value="">— Seleccionar —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Municipio *</label>
+                            <select class="form-control" id="f-municipio" required>
+                                <option value="">— Seleccionar departamento —</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo electrónico</label>
+                            <input type="email" class="form-control" id="f-correo">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-accent" id="btn-guardar">Guardar</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- TOAST -->
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal fade" id="modalConfirm" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="confirm-body">
+                <div class="icon">🗑️</div>
+                <h5>¿Eliminar paciente?</h5>
+                <p>Esta acción no se puede deshacer.</p>
+                <div class="d-flex justify-content-center mt-3" style="gap:.75rem">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btn-confirm-delete">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="toast"></div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
-// ── Configuración Axios ────────────────────────────────
-const TOKEN = localStorage.getItem('access_token') ?? '';
-axios.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
-axios.defaults.headers.common['Accept']        = 'application/json';
-axios.defaults.headers.common['Content-Type']  = 'application/json';
+    // ── Auth ───────────────────────────────────────────────
+    const TOKEN = localStorage.getItem('access_token');
+    if (!TOKEN) window.location.href = '/login';
 
-// ── Estado ─────────────────────────────────────────────
-let currentPage  = 1;
-let totalPages   = 1;
-let deleteTarget = null;
-let searchTimer  = null;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
+    axios.defaults.headers.common['Accept']        = 'application/json';
 
-// ── Modales ────────────────────────────────────────────
-const openModal  = id => document.getElementById(id).classList.add('open');
-const closeModal = id => document.getElementById(id).classList.remove('open');
+    axios.interceptors.response.use(
+        response => response,
+        error => {
+            if (error.response?.status === 401) {
+                localStorage.removeItem('access_token');
+                window.location.href = '/login';
+            }
+            return Promise.reject(error);
+        }
+    );
 
-document.querySelectorAll('[data-close]').forEach(btn =>
-    btn.addEventListener('click', () => closeModal(btn.dataset.close))
-);
-document.querySelectorAll('.modal-backdrop').forEach(bd =>
-    bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); })
-);
+    function cerrarSesion() {
+        axios.post('/api/logout').finally(() => {
+            localStorage.removeItem('access_token');
+            window.location.href = '/login';
+        });
+    }
 
-// ── Toast ──────────────────────────────────────────────
-function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `show ${type}`;
-    setTimeout(() => t.className = '', 3500);
-}
+    function openNav()  { document.getElementById('mySidebar').style.width = '220px'; }
+    function closeNav() { document.getElementById('mySidebar').style.width = '0'; }
 
-// ── Catálogos ──────────────────────────────────────────
-async function cargarCatalogos() {
-    try {
-        const [tiposRes, generosRes, deptosRes] = await Promise.all([
-            axios.get('/api/tipos-documento'),
-            axios.get('/api/generos'),
-            axios.get('/api/departamentos'),
-        ]);
-        llenarSelect('f-tipo-doc',     tiposRes.data.data   ?? tiposRes.data,   'id', 'nombre');
-        llenarSelect('f-genero',       generosRes.data.data ?? generosRes.data, 'id', 'nombre');
-        llenarSelect('f-departamento', deptosRes.data.data  ?? deptosRes.data,  'id', 'nombre');
-    } catch { /* catálogos opcionales */ }
-}
+    let currentPage  = 1;
+    let totalPages   = 1;
+    let deleteTarget = null;
+    let searchTimer  = null;
 
-function llenarSelect(id, items, valKey, labelKey, selectedVal = null) {
-    const sel = document.getElementById(id);
-    sel.innerHTML = `<option value="">— Seleccionar —</option>` +
-        (items ?? []).map(i =>
-            `<option value="${i[valKey]}" ${String(i[valKey]) === String(selectedVal) ? 'selected' : ''}>${i[labelKey]}</option>`
-        ).join('');
-}
+    // ── Toast ──────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `show ${type}`;
+        setTimeout(() => t.className = '', 3500);
+    }
 
-async function cargarMunicipios(selectedId = null) {
-    const deptoId = document.getElementById('f-departamento').value;
-    const sel = document.getElementById('f-municipio');
-    if (!deptoId) { sel.innerHTML = '<option value="">— Seleccionar departamento —</option>'; return; }
-    try {
-        const { data } = await axios.get(`/api/municipios?departamento_id=${deptoId}`);
-        llenarSelect('f-municipio', data.data ?? data, 'id', 'nombre', selectedId);
-    } catch {}
-}
+    // ── Foto: tabs ─────────────────────────────────────────
+    function cambiarTab(tab) {
+        document.querySelectorAll('.foto-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.foto-panel').forEach(p => p.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(`panel-${tab}`).classList.add('active');
+    }
 
-document.getElementById('f-departamento').addEventListener('change', () => cargarMunicipios());
+    function actualizarPreview(url) {
+        const preview = document.getElementById('foto-preview');
+        preview.innerHTML = url
+            ? `<img src="${url}" alt="foto" onerror="this.parentElement.innerHTML='👤'">`
+            : '👤';
+        document.getElementById('f-foto-url').value = url ?? '';
+    }
 
-// ── Listar ─────────────────────────────────────────────
-async function cargarPacientes(page = 1) {
-    const q = document.getElementById('search').value.trim();
-    document.getElementById('tbody').innerHTML =
-        `<tr class="state-row"><td colspan="6">Cargando…</td></tr>`;
+    // Usar URL directamente
+    function usarUrl() {
+        const url = document.getElementById('f-foto-url-input').value.trim();
+        if (!url) return;
+        actualizarPreview(url);
+        setUploadStatus('✓ URL guardada', 'ok');
+    }
 
-    try {
-        const params = new URLSearchParams({ page });
-        if (q) params.set('q', q);
+    function setUploadStatus(msg, type = '') {
+        const el = document.getElementById('upload-status');
+        el.textContent = msg;
+        el.className = `upload-status ${type}`;
+    }
 
-        const { data } = await axios.get(`/api/paciente?${params}`);
-        const lista    = data.data?.data ?? [];
-        currentPage = data.data?.current_page ?? 1;
-        totalPages  = data.data?.last_page    ?? 1;
-        const total = data.data?.total        ?? 0;
+    // Subir archivo al servidor
+    document.getElementById('foto-file-input').addEventListener('change', async function () {
+        const file = this.files[0];
+        if (!file) return;
 
-        document.getElementById('total-label').textContent =
-            `${total} paciente${total !== 1 ? 's' : ''} registrado${total !== 1 ? 's' : ''}`;
-        document.getElementById('page-info').textContent =
-            `Página ${currentPage} de ${totalPages}`;
-        document.getElementById('btn-prev').disabled = currentPage <= 1;
-        document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        const btnSubir = document.getElementById('btn-subir-foto');
+        btnSubir.disabled = true;
+        setUploadStatus('Subiendo imagen…');
 
-        if (!lista.length) {
-            document.getElementById('tbody').innerHTML =
-                `<tr class="state-row"><td colspan="6">No se encontraron pacientes.</td></tr>`;
+        const formData = new FormData();
+        formData.append('foto', file);
+
+        try {
+            const { data } = await axios.post('/api/paciente/upload-foto', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            actualizarPreview(data.foto_url);
+            setUploadStatus('✓ Imagen subida correctamente', 'ok');
+        } catch {
+            setUploadStatus('✗ Error al subir la imagen', 'error');
+        } finally {
+            btnSubir.disabled = false;
+            this.value = '';
+        }
+    });
+
+    // ── Catálogos ──────────────────────────────────────────
+    async function cargarCatalogos() {
+        try {
+            const [tiposRes, generosRes, deptosRes] = await Promise.all([
+                axios.get('/api/tipos-documento'),
+                axios.get('/api/generos'),
+                axios.get('/api/departamentos'),
+            ]);
+            llenarSelect('f-tipo-doc',     tiposRes.data.data   ?? tiposRes.data,   'id', 'nombre');
+            llenarSelect('f-genero',       generosRes.data.data ?? generosRes.data, 'id', 'nombre');
+            llenarSelect('f-departamento', deptosRes.data.data  ?? deptosRes.data,  'id', 'nombre');
+        } catch {}
+    }
+
+    function llenarSelect(id, items, valKey, labelKey, selectedVal = null) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = `<option value="">— Seleccionar —</option>` +
+            (items ?? []).map(i =>
+                `<option value="${i[valKey]}" ${String(i[valKey]) === String(selectedVal) ? 'selected' : ''}>${i[labelKey]}</option>`
+            ).join('');
+    }
+
+    async function cargarMunicipios(selectedId = null) {
+        const deptoId = document.getElementById('f-departamento').value;
+        if (!deptoId) {
+            document.getElementById('f-municipio').innerHTML = '<option value="">— Seleccionar departamento —</option>';
             return;
         }
+        try {
+            const { data } = await axios.get(`/api/municipios?departamento_id=${deptoId}`);
+            llenarSelect('f-municipio', data.data ?? data, 'id', 'nombre', selectedId);
+        } catch {}
+    }
 
-        document.getElementById('tbody').innerHTML = lista.map(p => `
-            <tr>
-                <td>
-                    <span class="badge">${p.tipo_documento?.nombre ?? '—'}</span><br>
-                    <strong>${p.numero_documento}</strong>
-                </td>
-                <td>${[p.nombre1, p.nombre2, p.apellido1, p.apellido2].filter(Boolean).join(' ')}</td>
-                <td>${p.genero?.nombre ?? '—'}</td>
-                <td>${p.municipio?.nombre ?? '—'}</td>
-                <td style="color:var(--muted)">${p.correo ?? '—'}</td>
-                <td>
-                    <div class="actions">
-                        <button class="btn btn-secondary btn-sm"
-                            onclick="abrirEditar('${p.numero_documento}')">Editar</button>
-                        <button class="btn btn-danger btn-sm"
-                            onclick="confirmarEliminar('${p.numero_documento}')">Eliminar</button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+    document.getElementById('f-departamento').addEventListener('change', () => cargarMunicipios());
 
-    } catch {
+    // ── Listar ─────────────────────────────────────────────
+    async function cargarPacientes(page = 1) {
+        const q = document.getElementById('search').value.trim();
         document.getElementById('tbody').innerHTML =
-            `<tr class="state-row"><td colspan="6">Error al cargar los pacientes.</td></tr>`;
-    }
-}
+            `<tr class="state-row"><td colspan="7">Cargando…</td></tr>`;
 
-// ── Crear ──────────────────────────────────────────────
-document.getElementById('btn-nuevo').addEventListener('click', () => {
-    document.getElementById('form-paciente').reset();
-    document.getElementById('f-modo').value         = 'create';
-    document.getElementById('f-doc-original').value = '';
-    document.getElementById('modal-title').textContent = 'Nuevo paciente';
-    document.getElementById('f-numero-doc').disabled   = false;
-    openModal('modal-form');
-});
+        try {
+            const params = new URLSearchParams({ page });
+            if (q) params.set('q', q);
 
-// ── Editar ─────────────────────────────────────────────
-async function abrirEditar(doc) {
-    try {
-        const { data } = await axios.get(`/api/paciente/${doc}`);
-        const p = data.data;
+            const { data } = await axios.get(`/api/paciente?${params}`);
+            const lista = data.data?.data ?? [];
+            currentPage = data.data?.current_page ?? 1;
+            totalPages  = data.data?.last_page    ?? 1;
+            const total = data.data?.total        ?? 0;
 
-        document.getElementById('f-modo').value           = 'edit';
-        document.getElementById('f-doc-original').value   = doc;
-        document.getElementById('modal-title').textContent = 'Editar paciente';
-        document.getElementById('f-numero-doc').disabled   = true;
+            document.getElementById('total-label').textContent =
+                `${total} paciente${total !== 1 ? 's' : ''} registrado${total !== 1 ? 's' : ''}`;
+            document.getElementById('page-info').textContent =
+                `Página ${currentPage} de ${totalPages}`;
+            document.getElementById('btn-prev').disabled = currentPage <= 1;
+            document.getElementById('btn-next').disabled = currentPage >= totalPages;
 
-        document.getElementById('f-tipo-doc').value   = p.tipo_documento_id;
-        document.getElementById('f-numero-doc').value = p.numero_documento;
-        document.getElementById('f-nombre1').value    = p.nombre1   ?? '';
-        document.getElementById('f-nombre2').value    = p.nombre2   ?? '';
-        document.getElementById('f-apellido1').value  = p.apellido1 ?? '';
-        document.getElementById('f-apellido2').value  = p.apellido2 ?? '';
-        document.getElementById('f-genero').value     = p.genero_id;
-        document.getElementById('f-departamento').value = p.departamento_id;
-        await cargarMunicipios(p.municipio_id);
-        document.getElementById('f-correo').value = p.correo ?? '';
+            if (!lista.length) {
+                document.getElementById('tbody').innerHTML =
+                    `<tr class="state-row"><td colspan="7">No se encontraron pacientes.</td></tr>`;
+                return;
+            }
 
-        openModal('modal-form');
-    } catch {
-        showToast('Error al cargar el paciente.', 'error');
-    }
-}
+            document.getElementById('tbody').innerHTML = lista.map(p => `
+                <tr>
+                    <td>
+                        ${p.foto_url
+                            ? `<img src="${p.foto_url}" class="foto-tabla" alt="foto">`
+                            : `<div class="foto-placeholder">👤</div>`
+                        }
+                    </td>
+                    <td>
+                        <span class="badge-tipo">${p.tipo_documento?.nombre ?? '—'}</span><br>
+                        <strong>${p.numero_documento}</strong>
+                    </td>
+                    <td>${[p.nombre1, p.nombre2, p.apellido1, p.apellido2].filter(Boolean).join(' ')}</td>
+                    <td>${p.genero?.nombre ?? '—'}</td>
+                    <td>${p.municipio?.nombre ?? '—'}</td>
+                    <td class="text-muted">${p.correo ?? '—'}</td>
+                    <td>
+                        <div class="actions">
+                            <button type="button" class="btn btn-info btn-sm"
+                                onclick="abrirEditar('${p.numero_documento}')">Editar</button>
+                            <button type="button" class="btn btn-danger btn-sm"
+                                onclick="confirmarEliminar('${p.numero_documento}')">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
 
-// ── Guardar (crear o actualizar) ───────────────────────
-document.getElementById('form-paciente').addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const modo = document.getElementById('f-modo').value;
-    const doc  = document.getElementById('f-doc-original').value;
-
-    const payload = {
-        tipo_documento_id: document.getElementById('f-tipo-doc').value,
-        numero_documento:  document.getElementById('f-numero-doc').value.trim(),
-        nombre1:           document.getElementById('f-nombre1').value.trim(),
-        nombre2:           document.getElementById('f-nombre2').value.trim() || null,
-        apellido1:         document.getElementById('f-apellido1').value.trim(),
-        apellido2:         document.getElementById('f-apellido2').value.trim() || null,
-        genero_id:         document.getElementById('f-genero').value,
-        departamento_id:   document.getElementById('f-departamento').value,
-        municipio_id:      document.getElementById('f-municipio').value,
-        correo:            document.getElementById('f-correo').value.trim() || null,
-    };
-
-    const btn = document.getElementById('btn-guardar');
-    btn.disabled = true;
-    btn.textContent = 'Guardando…';
-
-    try {
-        if (modo === 'create') {
-            await axios.post('/api/paciente', payload);
-            showToast('Paciente creado correctamente.');
-        } else {
-            await axios.put(`/api/paciente/${doc}`, payload);
-            showToast('Paciente actualizado correctamente.');
+        } catch {
+            document.getElementById('tbody').innerHTML =
+                `<tr class="state-row"><td colspan="7">Error al cargar los pacientes.</td></tr>`;
         }
-        closeModal('modal-form');
-        cargarPacientes(currentPage);
-    } catch (err) {
-        showToast(err.response?.data?.message ?? 'Error al guardar.', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Guardar';
     }
-});
 
-// ── Eliminar ───────────────────────────────────────────
-function confirmarEliminar(doc) {
-    deleteTarget = doc;
-    openModal('modal-confirm');
-}
+    // ── Nuevo ──────────────────────────────────────────────
+    document.getElementById('btn-nuevo').addEventListener('click', () => {
+        document.getElementById('form-paciente').reset();
+        document.getElementById('f-modo').value         = 'create';
+        document.getElementById('f-doc-original').value = '';
+        document.getElementById('modal-title').textContent = 'Nuevo paciente';
+        document.getElementById('f-numero-doc').disabled   = false;
+        document.getElementById('f-foto-url-input').value  = '';
+        actualizarPreview('');
+        setUploadStatus('');
+    });
 
-document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
-    if (!deleteTarget) return;
-    try {
-        await axios.delete(`/api/paciente/${deleteTarget}`);
-        showToast('Paciente eliminado.');
-        closeModal('modal-confirm');
-        cargarPacientes(currentPage);
-    } catch {
-        showToast('Error al eliminar.', 'error');
-    } finally {
-        deleteTarget = null;
+    // ── Editar ─────────────────────────────────────────────
+    async function abrirEditar(doc) {
+        try {
+            const { data } = await axios.get(`/api/paciente/${doc}`);
+            const p = data.data;
+
+            document.getElementById('f-modo').value           = 'edit';
+            document.getElementById('f-doc-original').value   = doc;
+            document.getElementById('modal-title').textContent = 'Editar paciente';
+            document.getElementById('f-numero-doc').disabled   = true;
+
+            document.getElementById('f-tipo-doc').value      = p.tipo_documento_id;
+            document.getElementById('f-numero-doc').value    = p.numero_documento;
+            document.getElementById('f-nombre1').value       = p.nombre1   ?? '';
+            document.getElementById('f-nombre2').value       = p.nombre2   ?? '';
+            document.getElementById('f-apellido1').value     = p.apellido1 ?? '';
+            document.getElementById('f-apellido2').value     = p.apellido2 ?? '';
+            document.getElementById('f-genero').value        = p.genero_id;
+            document.getElementById('f-departamento').value  = p.departamento_id;
+            await cargarMunicipios(p.municipio_id);
+            document.getElementById('f-correo').value        = p.correo   ?? '';
+            document.getElementById('f-foto-url-input').value = p.foto_url ?? '';
+            actualizarPreview(p.foto_url ?? '');
+            setUploadStatus('');
+
+            $('#modalForm').modal('show');
+        } catch {
+            showToast('Error al cargar el paciente.', 'error');
+        }
     }
-});
 
-// ── Paginación ─────────────────────────────────────────
-document.getElementById('btn-prev').addEventListener('click', () => cargarPacientes(currentPage - 1));
-document.getElementById('btn-next').addEventListener('click', () => cargarPacientes(currentPage + 1));
+    // ── Guardar ────────────────────────────────────────────
+    document.getElementById('btn-guardar').addEventListener('click', async () => {
+        const modo = document.getElementById('f-modo').value;
+        const doc  = document.getElementById('f-doc-original').value;
 
-// ── Búsqueda con debounce ──────────────────────────────
-document.getElementById('search').addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => cargarPacientes(1), 400);
-});
+        const payload = {
+            tipo_documento_id: document.getElementById('f-tipo-doc').value,
+            numero_documento:  document.getElementById('f-numero-doc').value.trim(),
+            nombre1:           document.getElementById('f-nombre1').value.trim(),
+            nombre2:           document.getElementById('f-nombre2').value.trim() || null,
+            apellido1:         document.getElementById('f-apellido1').value.trim(),
+            apellido2:         document.getElementById('f-apellido2').value.trim() || null,
+            genero_id:         document.getElementById('f-genero').value,
+            departamento_id:   document.getElementById('f-departamento').value,
+            municipio_id:      document.getElementById('f-municipio').value,
+            correo:            document.getElementById('f-correo').value.trim() || null,
+            foto_url:          document.getElementById('f-foto-url').value.trim() || null,
+        };
 
-// ── Init ───────────────────────────────────────────────
-cargarCatalogos();
-cargarPacientes();
+        const btn = document.getElementById('btn-guardar');
+        btn.disabled = true;
+        btn.textContent = 'Guardando…';
+
+        try {
+            if (modo === 'create') {
+                await axios.post('/api/paciente', payload);
+                showToast('Paciente creado correctamente.');
+            } else {
+                await axios.put(`/api/paciente/${doc}`, payload);
+                showToast('Paciente actualizado correctamente.');
+            }
+            $('#modalForm').modal('hide');
+            cargarPacientes(currentPage);
+        } catch (err) {
+            showToast(err.response?.data?.message ?? 'Error al guardar.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Guardar';
+        }
+    });
+
+    // ── Eliminar ───────────────────────────────────────────
+    function confirmarEliminar(doc) {
+        deleteTarget = doc;
+        $('#modalConfirm').modal('show');
+    }
+
+    document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+        if (!deleteTarget) return;
+        try {
+            await axios.delete(`/api/paciente/${deleteTarget}`);
+            showToast('Paciente eliminado.');
+            $('#modalConfirm').modal('hide');
+            cargarPacientes(currentPage);
+        } catch {
+            showToast('Error al eliminar.', 'error');
+        } finally {
+            deleteTarget = null;
+        }
+    });
+
+    // ── Paginación ─────────────────────────────────────────
+    document.getElementById('btn-prev').addEventListener('click', () => cargarPacientes(currentPage - 1));
+    document.getElementById('btn-next').addEventListener('click', () => cargarPacientes(currentPage + 1));
+
+    // ── Búsqueda ───────────────────────────────────────────
+    document.getElementById('search').addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => cargarPacientes(1), 400);
+    });
+
+    // ── Init ───────────────────────────────────────────────
+    cargarCatalogos();
+    cargarPacientes();
 </script>
 </body>
 </html>

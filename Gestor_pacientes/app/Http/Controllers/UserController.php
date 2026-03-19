@@ -7,6 +7,8 @@ use App\Repositories\PacienteRepository;
 use App\Http\Requests\StorePacienteRequest;
 use App\Http\Requests\UpdatePacienteRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -111,4 +113,18 @@ class UserController extends Controller
             'message' => 'Paciente eliminado correctamente.',
         ]);
     }
+
+    public function uploadFoto(Request $request): JsonResponse
+{
+    $request->validate([
+        'foto' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+    ]);
+
+    $path = $request->file('foto')->store('pacientes/fotos', 'public');
+
+    return response()->json([
+        'success'  => true,
+        'foto_url' => Storage::url($path),
+    ]);
+}
 }

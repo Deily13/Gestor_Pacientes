@@ -23,6 +23,7 @@ class Paciente extends Model
         'departamento_id',
         'municipio_id',
         'correo',
+        'foto_url',
     ];
 
     public function tipoDocumento()

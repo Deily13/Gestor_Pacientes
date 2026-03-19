@@ -30,7 +30,6 @@
             box-shadow: 0 24px 80px rgba(0,0,0,.5);
         }
 
-        /* ── Panel izquierdo decorativo ── */
         .login-side {
             flex: 1;
             background: #c9541a;
@@ -69,7 +68,6 @@
             z-index: 1;
         }
 
-        /* ── Panel derecho formulario ── */
         .login-form {
             flex: 1;
             background: #fff;
@@ -149,14 +147,11 @@
 <body>
 
 <div class="login-wrapper">
-
-    <!-- Panel decorativo -->
     <div class="login-side">
         <h2>Gestor de<br>Pacientes</h2>
         <p>Sistema de gestión clínica — acceso seguro con JWT</p>
     </div>
 
-    <!-- Formulario -->
     <div class="login-form">
         <h1>Bienvenido</h1>
         <p class="subtitle">Inicia sesión para continuar</p>
@@ -173,23 +168,19 @@
                    placeholder="••••••••" autocomplete="current-password">
         </div>
 
-        <button class="btn-login" id="btn-login">Iniciar sesión</button>
-
+        <button type="button" class="btn-login" id="btn-login">Iniciar sesión</button>
         <div class="error-msg" id="error-msg"></div>
     </div>
-
 </div>
 
 <script>
-    // Si ya hay token válido, redirigir directo
-    if (localStorage.getItem('access_token')) {
-        window.location.href = '/pacientes';
-    }
+    // Limpia siempre el token al entrar al login — fuerza reautenticación
+    localStorage.removeItem('access_token');
 
     const btn      = document.getElementById('btn-login');
     const errorMsg = document.getElementById('error-msg');
 
-    async function login() {
+    btn.addEventListener('click', async function () {
         const email    = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
 
@@ -206,25 +197,15 @@
 
         try {
             const { data } = await axios.post('/api/login', { email, password });
-
             localStorage.setItem('access_token', data.access_token);
             window.location.href = '/pacientes';
-
         } catch (err) {
             const msg = err.response?.data?.message ?? 'Credenciales incorrectas.';
             errorMsg.textContent   = msg;
             errorMsg.style.display = 'block';
-        } finally {
             btn.disabled    = false;
             btn.textContent = 'Iniciar sesión';
         }
-    }
-
-    btn.addEventListener('click', login);
-
-    // Submit con Enter
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter') login();
     });
 </script>
 

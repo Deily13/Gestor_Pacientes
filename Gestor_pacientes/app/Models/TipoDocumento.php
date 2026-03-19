@@ -11,10 +11,7 @@ class TipoDocumento extends Model
 
 
     protected $table = 'tipos_documento';
-
-    protected $fillable = [
-        'nombre',
-    ];
+    protected $fillable = ['nombre'];
 
     
     public function paciente()

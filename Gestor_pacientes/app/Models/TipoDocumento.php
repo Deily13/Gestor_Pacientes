@@ -17,7 +17,7 @@ class TipoDocumento extends Model
     ];
 
     
-    public function pacientes()
+    public function paciente()
     {
         return $this->hasMany(Paciente::class, 'tipo_documento_id');
     }

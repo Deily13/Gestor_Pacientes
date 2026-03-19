@@ -13,7 +13,7 @@ class Genero extends Model
 
     protected $fillable = ['nombre'];
 
-    public function pacientes()
+    public function paciente()
     {
         return $this->hasMany(Paciente::class, 'genero_id');
     }

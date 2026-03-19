@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Paciente extends Model
 {
@@ -23,8 +24,6 @@ class Paciente extends Model
         'municipio_id',
         'correo',
     ];
-
-
 
     public function tipoDocumento()
     {

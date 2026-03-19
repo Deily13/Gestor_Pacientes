@@ -13,26 +13,26 @@ class UpdatePacienteRequest extends FormRequest
     }
 
 
-public function rules(): array
-{
-    $numeroDocumento = $this->route('numero_documento');
-    $paciente        = Paciente::where('numero_documento', $numeroDocumento)->first();
-    $pacienteId      = $paciente?->id;
+    public function rules(): array
+    {
+        $numeroDocumento = $this->route('numero_documento');
+        $paciente        = Paciente::where('numero_documento', $numeroDocumento)->first();
+        $pacienteId      = $paciente?->id;
 
-    return [
-        'tipo_documento_id' => 'sometimes|integer|exists:tipos_documento,id',
-        'numero_documento'  => "sometimes|string|max:20|unique:paciente,numero_documento,{$pacienteId}",
-        'nombre1'           => 'sometimes|string|min:2|max:50',
-        'nombre2'           => 'nullable|string|max:50',
-        'apellido1'         => 'sometimes|string|min:2|max:50',
-        'apellido2'         => 'nullable|string|max:50',
-        'genero_id'         => 'sometimes|integer|exists:genero,id',
-        'departamento_id'   => 'sometimes|integer|exists:departamentos,id',
-        'municipio_id'      => 'sometimes|integer|exists:municipios,id',
-        'correo'            => "sometimes|email|unique:paciente,correo,{$pacienteId}",
-        'foto_url'          => 'nullable|string',
-    ];
-}
+        return [
+            'tipo_documento_id' => 'sometimes|integer|exists:tipos_documento,id',
+            'numero_documento'  => "sometimes|string|max:20|unique:paciente,numero_documento,{$pacienteId}",
+            'nombre1'           => 'required|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/|max:50|min:3',
+            'nombre2'           => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/|max:50',
+            'apellido1'         => 'required|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/|max:50|min:3',
+            'apellido2'         => 'nullable|string|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/|max:50',
+            'genero_id'         => 'sometimes|integer|exists:genero,id',
+            'departamento_id'   => 'sometimes|integer|exists:departamentos,id',
+            'municipio_id'      => 'sometimes|integer|exists:municipios,id',
+            'correo'            => "sometimes|email|unique:paciente,correo,{$pacienteId}",
+            'foto_url'          => 'nullable|string',
+        ];
+    }
 
     public function messages(): array
     {

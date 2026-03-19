@@ -1,0 +1,48 @@
+-- 1. Tabla de Departamentos
+CREATE TABLE departamentos (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL
+);
+
+-- 2. Tabla de Municipios (Relacionada con Departamentos)
+CREATE TABLE municipios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    departamento_id INT NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    CONSTRAINT fk_municipio_departamento 
+        FOREIGN KEY (departamento_id) 
+        REFERENCES departamentos(id)
+);
+
+-- 3. Tabla de Tipos de Documento
+CREATE TABLE tipos_documento (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 4. Tabla de Género
+CREATE TABLE genero (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 5. Tabla de Paciente (Tabla Principal con Relaciones)
+CREATE TABLE paciente (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    tipo_documento_id INT NOT NULL,
+    numero_documento VARCHAR(20) NOT NULL UNIQUE,
+    nombre1 VARCHAR(50) NOT NULL,
+    nombre2 VARCHAR(50),
+    apellido1 VARCHAR(50) NOT NULL,
+    apellido2 VARCHAR(50),
+    genero_id INT NOT NULL,
+    departamento_id INT NOT NULL,
+    municipio_id INT NOT NULL,
+    correo VARCHAR(100),
+    
+    -- Definición de llaves foráneas
+    CONSTRAINT fk_paciente_tipo_doc FOREIGN KEY (tipo_documento_id) REFERENCES tipos_documento(id),
+    CONSTRAINT fk_paciente_genero FOREIGN KEY (genero_id) REFERENCES genero(id),
+    CONSTRAINT fk_paciente_depto FOREIGN KEY (departamento_id) REFERENCES departamentos(id),
+    CONSTRAINT fk_paciente_muni FOREIGN KEY (municipio_id) REFERENCES municipios(id)
+);

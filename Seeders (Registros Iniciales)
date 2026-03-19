@@ -1,0 +1,15 @@
+-- Departamentos (5 registros)
+INSERT INTO departamentos (id, nombre) VALUES 
+(1, 'Huila'),
+(2, 'Antioquia'),
+(3, 'Cundinamarca'),
+(4, 'Valle del Cauca'),
+(5, 'Atlántico');
+
+-- Municipios (2 por cada departamento = 10 registros)
+INSERT INTO municipios (departamento_id, nombre) VALUES 
+(1, 'Neiva'), (1, 'Baraya'),        -- Huila
+(2, 'Medellín'), (2, 'Envigado'),   -- Antioquia
+(3, 'Bogotá'), (3, 'Soacha'),       -- Cundinamarca
+(4, 'Cali'), (4, 'Palmira'),        -- Valle
+(5, 'Barranquilla'), (5, 'Soledad');-- Atlántico
